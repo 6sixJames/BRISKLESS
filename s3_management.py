@@ -21,8 +21,8 @@ class briskless_AWS_Management:
     def __init__(self, json_credentials_filepath =('/Users/nickgallagher/BRISKLESS/s3_credentials.json')):
         
         #this loads in the json credentials
-        #this is the same credentials file that hosues the logion
-        #informaiton for the CRM 
+        #this is the same credentials file that houses the logon
+        
         with open(json_credentials_filepath,'r') as f:
             self.credentials = json.load(f)
             
