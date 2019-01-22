@@ -15,8 +15,6 @@ docs = db.collection(user_id).get()
 
 dfs = []
 
-docs = db.collection(user_id).get()
-
 
 for doc in docs:
     data = db.collection(user_id).document(doc.id).collection('data').order_by(u'timestamp').get()
