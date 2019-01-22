@@ -5,17 +5,14 @@ from Phidget22.Devices.TemperatureSensor import *
 import time
 from datetime import datetime
 
-setup = input("do you want to set up? y/n")
 
-if setup.lower() == "y":
-    # used as the document id within the database.
-    USER_NAME = input("Enter Username: ")
-    SMOKER = input("What kind of smoker do you have? ")
-    MEAT = input("What cut of meat are you cooking? ")
-elif setup.lower() == "n":
-    USER_NAME = "GALLAGHER_NICK"
-    SMOKER = "Weber 22"
-    MEAT = "Brisket"
+def get_custom_notes():
+    notes = []
+    while input("additional notes? y/n").lower() == "y":
+        key = input("What do you want to note")
+        data = input("What is the value associate with this note?")
+        notes.append({key: data})
+    return notes
 
 
 def onAttachHandler(self):
@@ -28,15 +25,14 @@ def onAttachHandler(self):
 
 
 def create_new_cook():
-    """
-    Initializes a new document in the firebase store, adds 'Cook level' data - i.e. Meat and Smoker Info.
-    :return:
-    """
     cook_doc = db.collection(USER_NAME).document()
     print(f"Created new cook for user {USER_NAME} with cook id:{cook_doc.id}")
 
     cook_doc = db.collection(USER_NAME).document(cook_doc.id)
     cook_doc.set({"smoker": SMOKER, "meat": MEAT})
+
+    for note in NOTES:
+        cook_doc.set(note)
 
     return cook_doc.id
 
@@ -84,6 +80,21 @@ def connect_to_firebase(path_to_json_creds):
 
 
 if __name__ == "__main__":
+
+    setup = input("do you want to set up? y/n")
+
+    if setup.lower() == "y":
+        # used as the document id within the database.
+        USER_NAME = input("Enter Username: ")
+        SMOKER = input("What kind of smoker do you have? ")
+        MEAT = input("What cut of meat are you cooking? ")
+        NOTES = get_custom_notes()
+
+    elif setup.lower() == "n":
+        USER_NAME = "GALLAGHER_NICK"
+        SMOKER = "Weber 22"
+        MEAT = "Brisket"
+
     BrisklessPhidget = configure_phidget()
 
     # db variable is used to log to firebase, despite not being explicitly passed.
