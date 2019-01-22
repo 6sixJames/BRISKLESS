@@ -1,34 +1,42 @@
 from FirebaseManager import connect_to_firebase
 import pandas as pd
-from datetime import datetime
 
 
 def add_time_cooking(x, start_time):
     return (x-start_time).total_seconds()
 
+def get_data_from_firebase(db, user_id):
 
-db = connect_to_firebase("briskless_firebase_auth.json")
+    dfs = []
 
-user_id = u'GALLAGHER_NICK'
+    docs = db.collection(user_id).get()
 
-docs = db.collection(user_id).get()
+    for doc in docs:
+        data = db.collection(user_id).document(doc.id).collection('data').order_by(u'timestamp').get()
+        data_array = [{'temp': entry._data['temp'], 'timestamp': entry._data['timestamp']} for entry in data]
 
-dfs = []
+        temp_df = pd.DataFrame(data_array)
+        temp_df['cook_id'] = doc.id
+        temp_df['user'] = user_id
+        temp_df['grill_type'] = doc.to_dict()['smoker']
+        temp_df['meat_type'] = doc.to_dict()['meat']
 
+        start_time = temp_df['timestamp'].iloc[0]
+        temp_df['time_cooking'] = temp_df['timestamp'].apply(lambda x: add_time_cooking(x, start_time))
 
-for doc in docs:
-    data = db.collection(user_id).document(doc.id).collection('data').order_by(u'timestamp').get()
-    data_array = [{'temp': entry._data['temp'], 'timestamp': entry._data['timestamp']} for entry in data]
+        dfs.append(temp_df)
 
-    temp_df = pd.DataFrame(data_array)
-    temp_df['user'] = user_id
-    temp_df['grill_type'] = doc.to_dict()['smoker']
-    temp_df['meat_type'] = doc.to_dict()['meat']
+    df = pd.concat(dfs)
 
-    start_time = temp_df['timestamp'].iloc[0]
-    temp_df['time_cooking'] = temp_df['timestamp'].apply(lambda x: add_time_cooking(x, start_time))
+    return df
 
-    dfs.append(temp_df)
+if __name__ == "__main__":
+    db = connect_to_firebase("briskless_firebase_auth.json")
 
-df = pd.concat(dfs)
-df.to_csv('test.csv')
+    dfs = []
+    for user_id in [u'GALLAGHER_NICK', u'LINDLEY_DAVE']:
+        df = get_data_from_firebase(db, user_id)
+        dfs.append(df)
+
+    df = pd.concat(dfs)
+    df.to_csv('test.csv', index=False)
