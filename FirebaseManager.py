@@ -1,3 +1,14 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+A utility for launching a Phidget Thermocouple and log to firebase every 5 seconds indefinitely.
+Expects a file called firebase_auth.json in same directory.
+"""
+
+__author__ = 'Dave Lindley'
+
+
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
@@ -118,7 +129,7 @@ if __name__ == "__main__":
 
     # db variable is used to log to firebase, despite not being explicitly passed.
     # handled as variable within scope as work around for passing into log_to_firebase which is a monkey patched method.
-    db = connect_to_firebase("briskless_firebase_auth.json")
+    db = connect_to_firebase("firebase_auth.json")
 
     # set up doc id for cook
     cook_id = create_new_cook()
@@ -129,5 +140,8 @@ if __name__ == "__main__":
     # launch temperature reading from Phidget
     BrisklessPhidget.openWaitForAttachment(20000)
 
+
+    #loop keeps it running forever.
+    #can do additional interactions in here
     while True:
         time.sleep(10)
