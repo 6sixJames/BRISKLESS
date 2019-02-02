@@ -1,0 +1,67 @@
+import pandas as pd
+import numpy as np
+from datetime import datetime
+import time as t
+from sklearn.metrics import auc
+
+filepath = '~/BRISKLESS/data/sample_cook.csv'
+
+data = pd.read_csv(filepath)
+
+
+
+class Displacement_Management:
+    '''This class has several functions that work to return a value of
+       displacement, or the area under the curve of cooking velocity
+       and time.
+    '''
+    
+    def __init__(self):
+        
+        self.displ_dict = dict()
+        self.start_time = datetime.now()
+        
+        
+    def get_time(self):
+        return datetime.now()
+
+    def get_velocity(self, temp):
+        velo = 0.00000000000000007048*(temp**7.29927007299056)
+        return velo
+    
+    
+    def store_values(self, time, velo):
+        
+        delta = time - self.start_time
+        mins = delta.seconds/60
+    
+        self.displ_dict[mins] = velo
+
+    def get_auc(self):
+        keys = np.fromiter(self.displ_dict.keys(), dtype=float)
+        vals = np.fromiter(self.displ_dict.values(), dtype=float)
+        per_displ = auc(keys, vals)
+        return per_displ
+
+
+
+for i in range(len(data)):
+    
+    t.sleep(5)
+    
+    temp = data['temp'].iloc[i]
+    
+    if i == 0:
+        dpl = Displacement_Management()
+    
+    time = dpl.get_time()
+    
+    velo = dpl.get_velocity(temp)
+    
+    dpl.store_values(time, velo)
+    
+    if i!=0:
+        per_displ = dpl.get_auc()      
+        print(f'The cook is currently at {round(per_displ, 2)}% displacement')
+        
+        
