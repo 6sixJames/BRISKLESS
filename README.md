@@ -1,2 +1,2 @@
 # BRISKLESS
-where bbq meats analytics
+bbq analytics
